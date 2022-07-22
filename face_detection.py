@@ -36,10 +36,6 @@ def mainLoop(): # Start the main display loop
             faceNames.append(name)
 
         print(faceNames)
-        for (top, right, bottom, left) in faceLocations: # For every face location
-            cv.rectangle(rgbFrame, (left, top), (right, bottom), (0,0,255), 2) # Draw a red rectangle over the face
-
-        cv.imshow('Video', rgbFrame) # Display the frame in a window
 
         if cv.waitKey(1) & 0xFF == ord('q'): # If q is pressed, end the loop
             break
