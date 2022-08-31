@@ -10,13 +10,20 @@ knownFaceNames = [
 ]
 
 def createEncodingAndName(name, imagePath):
+
+    if type(name) is not str or type(imagePath) is not str:
+        raise TypeError("Name or imagePath is not a string")
+
+    if name == "":
+        raise ValueError("Name is invalid, please enter a valid name")
+
     loadedImage = fr.load_image_file(imagePath) # Loads the face image
     imageEncoding = fr.face_encodings(loadedImage)[0] # Turns it into an encoding
     
     knownFaceEncodings.append(imageEncoding) # Adds the encoding to the list, 
     #these will have the same index so they can be looked up easily
     knownFaceNames.append(name) # Adds the name to the list
-
+    
 createEncodingAndName("Lewis", "faces/lewis.jpg")
 createEncodingAndName("Barack Obama", "faces/barackobama.jpg")
 
@@ -27,7 +34,6 @@ def getFirstIdentifiedPerson(): # Start the main display loop
         ret, frame = camera.read() # Get the current frame
 
         rgbFrame = frame[:, :, ::-1] # This converts the frame from BGR colour to RGB colour
-
         faceLocations = fr.face_locations(rgbFrame) # Find the location of all the faces in the frame
         faceEncodings = fr.face_encodings(rgbFrame, faceLocations) # Find all the face encodings
 
@@ -49,8 +55,10 @@ def mainLoop(): # Start the main display loop
     while True:
         ret, frame = camera.read() # Get the current frame
 
-        rgbFrame = frame[:, :, ::-1] # This converts the frame from BGR colour to RGB colour
-
+        try:
+            rgbFrame = frame[:, :, ::-1] # This converts the frame from BGR colour to RGB colour
+        except TypeError:
+            raise Exception("Camera doesn't give output. Check if it's connected and enabled.")
         faceLocations = fr.face_locations(rgbFrame) # Find the location of all the faces in the frame
         faceEncodings = fr.face_encodings(rgbFrame, faceLocations) # Find all the face encodings
 
