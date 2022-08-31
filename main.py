@@ -1,3 +1,3 @@
 import face_detection as fd
 
-fd.mainLoop()
+fd.getFirstIdentifiedPerson()

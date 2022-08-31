@@ -1,21 +1,28 @@
 import face_recognition as fr
 import cv2 as cv
-from numpy import mat
-
-my_face = fr.load_image_file("faces/lewis.jpg")
-my_face_encoding = fr.face_encodings(my_face)[0]
 
 knownFaceEncodings = [
-    my_face_encoding
+    
 ]
 
 knownFaceNames = [
-    "Lewis"
+    
 ]
+
+def createEncodingAndName(name, imagePath):
+    loadedImage = fr.load_image_file(imagePath) # Loads the face image
+    imageEncoding = fr.face_encodings(loadedImage)[0] # Turns it into an encoding
+    
+    knownFaceEncodings.append(imageEncoding) # Adds the encoding to the list, 
+    #these will have the same index so they can be looked up easily
+    knownFaceNames.append(name) # Adds the name to the list
+
+createEncodingAndName("Lewis", "faces/lewis.jpg")
+createEncodingAndName("Barack Obama", "faces/barackobama.jpg")
 
 camera = cv.VideoCapture(0) # Get default video capture
 
-def mainLoop(): # Start the main display loop
+def getFirstIdentifiedPerson(): # Start the main display loop
     while True:
         ret, frame = camera.read() # Get the current frame
 
@@ -28,17 +35,13 @@ def mainLoop(): # Start the main display loop
 
         for faceEncoding in faceEncodings:
             matches = fr.compare_faces(knownFaceEncodings, faceEncoding) # See if the current face encoding is in the known list
-            name = "?" # will change if a matching name is found
-
-            if True in matches: # If a match is found
-                name = knownFaceNames[matches.index(True)] # Set name as the index of 
             
-            faceNames.append(name)
-
-        print(faceNames)
-
-        if cv.waitKey(1) & 0xFF == ord('q'): # If q is pressed, end the loop
-            break
+            if True in matches: # If a match is found
+                camera.release() # Unlink camera
+                cv.destroyAllWindows() # Remove all windows
+                print(knownFaceNames[matches.index(True)])
+                return knownFaceNames[matches.index(True)] # Get the name of the associated encoding 
     
     camera.release() # Unlink camera
     cv.destroyAllWindows() # Remove all windows
+
