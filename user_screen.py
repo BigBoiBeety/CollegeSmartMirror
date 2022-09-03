@@ -38,6 +38,5 @@ class UserScreen:
         # Date and Time
         self.dateLabel = tk.Label(self.tk, text="08/06/22 12:05 PM", font=("Arial", 40), borderwidth=4, relief=tk.SOLID).grid(column=2,row=0)
 
-
-w = UserScreen()
-w.tk.mainloop()
+        # Close after xxxx milliseconds
+        self.tk.after(4000, self.tk.destroy)
