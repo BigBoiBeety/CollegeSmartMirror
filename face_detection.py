@@ -30,6 +30,7 @@ createEncodingAndName("Barack Obama", "faces/barackobama.jpg")
 camera = cv.VideoCapture(0) # Get default video capture
 
 def getFirstIdentifiedPerson(): # Start the main display loop
+    camera = cv.VideoCapture(0) # Get default video capture
     while True:
         ret, frame = camera.read() # Get the current frame
 
