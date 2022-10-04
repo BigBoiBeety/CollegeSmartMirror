@@ -1,4 +1,5 @@
 import studentdata as sd
+import os
 
 class User():
     def __init__(self, id, firstName, lastName, facePath):
@@ -7,8 +8,11 @@ class User():
             raise TypeError("ID is not a integer")
         if type(firstName) is not str or type(lastName) is not str or type(facePath) is not str:
             raise TypeError("First Name, Last Name or the Face Path is not a string.")
-        if None in (id, firstName, lastName, facePath):
+        if None in (id, firstName, lastName, facePath) or "" in (firstName, lastName, facePath):
             raise ValueError("One variable is None")
+        if not os.path.exists(facePath):
+            raise FileNotFoundError("The face file doesn't exist")
+        
 
         # Initialisation
         self.id = id
@@ -23,7 +27,7 @@ class User():
 class Student(User):
     def __init__(self, id, firstName, lastName, facePath, yearGroup, assignments, timetable):
         super().__init__(id,firstName,lastName,facePath) # Initialises it like the User class
-        if type(yearGroup) is not int:
+        if type(yearGroup) is not str:
             raise TypeError("yearGroup is not valid type.")
         if type(timetable) is not sd.Timetable:
             raise TypeError("Timetable is not a timetable type")

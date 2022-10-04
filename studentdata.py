@@ -5,7 +5,7 @@ class Assignment():
         # Validation
         if type(subject) is not str or type(teacher) is not str:
             raise TypeError("Subject or Teacher isn't a string")
-        if type(dueDate) is not dt.datetime:
+        if type(dueDate) is not dt.date:
             raise TypeError("Due date is not a datetime")
         if None in (subject, teacher, dueDate):
             raise ValueError("A input is a None type")
@@ -14,9 +14,9 @@ class Assignment():
         self.teacher = teacher
         self.dueDate = dueDate
     def getTimeRemaining(self):
-        currentTime = dt.datetime.now()
-        timeDifference = currentTime - self.dueDate
-        return timeDifference
+        currentDate = dt.datetime.now().date()
+        timeDifference = self.dueDate - currentDate
+        return timeDifference.days
 
 class Period():
     def __init__(self, subject, teacher, classroom):
@@ -43,8 +43,8 @@ class Timetable():
 class CollegeUpdate():
     def __init__(self, date, text):
         # Validation
-        if type(date) is not dt.datetime:
-            raise TypeError("Date is not a datetime object")
+        if type(date) is not dt.date:
+            raise TypeError("Date is not a date object")
         if type(text) is not str:
             raise TypeError("Text is not a string")
         if None in (date, text):
