@@ -31,4 +31,17 @@ def InsertCollegeUpdate(collegeUpdateClass):
     conn.commit()
     return cursor.lastrowid
 
-InsertCollegeUpdate(CollegeUpdate(dt.datetime.now().date(), "test update :)"))
+def SelectAllRowsFromTable(table):
+    # Validation
+    if type(table) is not str:
+        raise TypeError("Table is not a string")
+
+    conn = connectToDatabase()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM ?", table)
+    rows = cursor.fetchall()
+    return rows
+
+rows = SelectAllRowsFromTable("collegeupdates")
+for row in rows:
+    print(row)
