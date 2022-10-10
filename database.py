@@ -62,6 +62,40 @@ def InsertPeriod(periodClass, nextID):
     conn.commit()
     return cursor.lastrowid
 
+def InsertMultiplePeriods(periodList):
+    i = 1
+    reversePeriods = []
+    for period in periodList:
+        reversePeriods.append(periodList[len(periodList) - i])
+        i += 1
+
+    lastID = 0
+    for period in reversePeriods:
+        lastID = InsertPeriod(period, lastID)
+    
+    return lastID
+
+
+def InsertTimetable(timetableClass):
+    # Validation
+    if type(timetableClass) is not Timetable:
+        raise TypeError("Timetable is not a timetable class")
+
+    mondayPeriodID = InsertMultiplePeriods(timetableClass.periods[0])
+    tuesdayPeriodID = InsertMultiplePeriods(timetableClass.periods[1])
+    wednesdayPeriodID = InsertMultiplePeriods(timetableClass.periods[2])
+    thursdayPeriodID = InsertMultiplePeriods(timetableClass.periods[3])
+    fridayPeriodID = InsertMultiplePeriods(timetableClass.periods[4])
+
+    sqlcode = """INSERT INTO timetables(mondayID, tuesdayID, wednesdayID, thursdayID, fridayID) VALUES (?,?,?,?,?)"""
+    data = (mondayPeriodID, tuesdayPeriodID, wednesdayPeriodID, thursdayPeriodID, fridayPeriodID)
+
+    conn = connectToDatabase()
+    cursor = conn.cursor()
+    cursor.execute(sqlcode, data)
+    conn.commit()
+    return cursor.lastrowid
+
 def SelectAllRowsFromTable(table):
     # Validation
     if type(table) is not str:
@@ -86,5 +120,11 @@ def SelectAllAssignmentsFromUser(userID):
     rows = cursor.fetchall()
     return rows
 
-period = Period("Maths", "Joe", "LB1")
-print(InsertPeriod(period, 0))
+timetable = Timetable(
+    [Period("Maths", "Joe", "LB1"),Period("Maths", "Joe", "LB1"),Period("Maths", "Joe", "LB1"),Period("Maths", "Joe", "LB1"),Period("Maths", "Joe", "LB1"),Period("Maths", "Joe", "LB1")],
+    [Period("Maths", "Joe", "LB1"),Period("Maths", "Joe", "LB1"),Period("Maths", "Joe", "LB1"),Period("Maths", "Joe", "LB1"),Period("Maths", "Joe", "LB1"),Period("Maths", "Joe", "LB1")],
+    [Period("Maths", "Joe", "LB1"),Period("Maths", "Joe", "LB1"),Period("Maths", "Joe", "LB1"),Period("Maths", "Joe", "LB1"),Period("Maths", "Joe", "LB1"),Period("Maths", "Joe", "LB1")],
+    [Period("Maths", "Joe", "LB1"),Period("Maths", "Joe", "LB1"),Period("Maths", "Joe", "LB1"),Period("Maths", "Joe", "LB1"),Period("Maths", "Joe", "LB1"),Period("Maths", "Joe", "LB1")],
+    [Period("Maths", "Joe", "LB1"),Period("Maths", "Joe", "LB1"),Period("Maths", "Joe", "LB1"),Period("Maths", "Joe", "LB1"),Period("Maths", "Joe", "LB1"),Period("Maths", "Joe", "LB1")]
+)
+
