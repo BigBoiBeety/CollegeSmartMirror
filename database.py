@@ -1,5 +1,5 @@
 import sqlite3
-from sqlite3 import Error
+from sqlite3 import Error, connect
 from typing import Type
 
 from studentdata import *
@@ -12,7 +12,6 @@ def connectToDatabase():
     conn = None
     try:
         conn = sqlite3.connect(database)
-        print(sqlite3.version)
     except Error as e:
         print(e)
 
@@ -149,13 +148,13 @@ def MakeCollegeUpdateFromID(id):
     collegeUpdate = CollegeUpdate(date, rows[2])
     return collegeUpdate
 
-def MakeAssignmentClassFromID(id):
+def MakeAssignmentClassFromID(assignmentID):
     # Validation
-    if type(id) is not int:
+    if type(assignmentID) is not int:
         raise TypeError("ID is not an int")
 
     sqlcode = "SELECT * FROM assignments WHERE id = ?"
-    data = (id,)
+    data = (assignmentID,)
 
     conn = connectToDatabase()
     cursor = conn.cursor()
@@ -164,3 +163,89 @@ def MakeAssignmentClassFromID(id):
 
     assignment = Assignment(data[1], data[2], dt.datetime.strptime(data[3], '%Y-%m-%d').date())
     return assignment
+
+def GetAllUserAssignments(userID):
+    # Validation
+    if type(userID) is not int:
+        raise TypeError("ID is not an int")
+    
+    assignments = []
+
+    sqlcode = "SELECT id FROM assignments WHERE userID = ?"
+    data = (userID,)
+
+    conn = connectToDatabase()
+    cursor = conn.cursor()
+    cursor.execute(sqlcode, data)
+    rows = cursor.fetchall()
+
+    for id in rows:
+        assignments.append(MakeAssignmentClassFromID(id[0]))
+
+    return assignments
+
+def MakeTimetable(id):
+    if type(id) is not int:
+        raise TypeError("ID isn't a integer")
+    
+    sqlcode = "SELECT * FROM timetables WHERE id = ?"
+    data = (id,)
+
+    conn = connectToDatabase()
+    cursor = conn.cursor()
+    cursor.execute(sqlcode, data)
+
+    timetable = cursor.fetchall()[0]
+
+    mondayPeriods = GetAllPeriods(timetable[1])
+    tuesdayPeriods = GetAllPeriods(timetable[2])
+    wednesdayPeriods = GetAllPeriods(timetable[3])
+    thursdayPeriods = GetAllPeriods(timetable[4])
+    fridayPeriods = GetAllPeriods(timetable[5])
+
+    return Timetable(mondayPeriods, tuesdayPeriods, wednesdayPeriods, thursdayPeriods, fridayPeriods)
+    
+
+def GetAllPeriods(periodID):
+    if type(periodID) is not int:
+        raise TypeError("ID is not an int")
+    
+    periods = []
+
+    conn = connectToDatabase()
+    cursor = conn.cursor()
+
+    sqlcode = "SELECT * FROM periods WHERE id = ?"
+    currentID = periodID
+    while True:
+        cursor.execute(sqlcode, (currentID,))
+        period = cursor.fetchall()[0]
+        periods.append(MakePeriodClass(period))
+        if period[1] == 0:
+            break
+        currentID = period[1]
+        
+    conn.close()
+
+    return periods
+
+
+def MakePeriodClass(periodData):
+    return Period(periodData[2], periodData[3], periodData[4])
+
+def MakeStudent(studentID):
+    if type(studentID) is not int:
+        raise TypeError("ID is not an int")
+    
+    sqlcode = "SELECT * FROM students WHERE id = ?"
+    data = (studentID,)
+
+    conn = connectToDatabase()
+    cursor = conn.cursor()
+    cursor.execute(sqlcode, data)
+    student = cursor.fetchall()[0]
+
+    timetable = MakeTimetable(student[5])
+    assignments = GetAllUserAssignments(student[0])
+
+    return users.Student(student[0], student[1], student[2], student[3], student[4], assignments, timetable)
