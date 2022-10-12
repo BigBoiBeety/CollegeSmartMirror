@@ -1,5 +1,6 @@
 import sqlite3
 from sqlite3 import Error
+from typing import Type
 
 from studentdata import *
 import users
@@ -25,12 +26,7 @@ def InsertCollegeUpdate(collegeUpdateClass):
     sqlcode = """INSERT INTO collegeupdates(date, description) VALUES(?,?)"""
     data = (collegeUpdateClass.date, collegeUpdateClass.text)
 
-    conn = connectToDatabase()
-    cursor = conn.cursor()
-    cursor.execute(sqlcode, data)
-    conn.commit()
-    return cursor.lastrowid
-
+    return InsertSQLWithData(sqlcode, data)
 
 def InsertAssignment(assignmentClass, userID):
     # Validation
@@ -40,11 +36,7 @@ def InsertAssignment(assignmentClass, userID):
     sqlcode = """INSERT INTO assignments(subject, teacher, date, userID) VALUES (?,?,?,?)"""
     data = (assignmentClass.subject, assignmentClass.teacher, assignmentClass.dueDate, userID)
 
-    conn = connectToDatabase()
-    cursor = conn.cursor()
-    cursor.execute(sqlcode, data)
-    conn.commit()
-    return cursor.lastrowid
+    return InsertSQLWithData(sqlcode, data)
 
 def InsertPeriod(periodClass, nextID):
     # Validation
@@ -56,11 +48,7 @@ def InsertPeriod(periodClass, nextID):
     sqlcode = """INSERT INTO periods(nextID, subject, teacher, classroom) VALUES (?,?,?,?)"""
     data = (nextID, periodClass.subject, periodClass.teacher, periodClass.classroom)
 
-    conn = connectToDatabase()
-    cursor = conn.cursor()
-    cursor.execute(sqlcode, data)
-    conn.commit()
-    return cursor.lastrowid
+    return InsertSQLWithData(sqlcode, data)
 
 def InsertMultiplePeriods(periodList):
     i = 1
@@ -74,7 +62,6 @@ def InsertMultiplePeriods(periodList):
         lastID = InsertPeriod(period, lastID)
     
     return lastID
-
 
 def InsertTimetable(timetableClass):
     # Validation
@@ -90,11 +77,20 @@ def InsertTimetable(timetableClass):
     sqlcode = """INSERT INTO timetables(mondayID, tuesdayID, wednesdayID, thursdayID, fridayID) VALUES (?,?,?,?,?)"""
     data = (mondayPeriodID, tuesdayPeriodID, wednesdayPeriodID, thursdayPeriodID, fridayPeriodID)
 
-    conn = connectToDatabase()
-    cursor = conn.cursor()
-    cursor.execute(sqlcode, data)
-    conn.commit()
-    return cursor.lastrowid
+    return InsertSQLWithData(sqlcode, data)
+
+def InsertStudent(studentClass):
+    # Validation
+    if type(studentClass) is not users.Student:
+        raise TypeError("Student isn't a student class")
+
+    sqlcode = """INSERT INTO students(firstName, lastName, facePath, yearGroup, timetableID) VALUES (?,?,?,?,?)"""
+
+    timetableID = InsertTimetable(studentClass.timetable)
+
+    data = (studentClass.firstName, studentClass.lastName, studentClass.facePath, studentClass.yearGroup, timetableID)
+    
+    return InsertSQLWithData(sqlcode, data)
 
 def SelectAllRowsFromTable(table):
     # Validation
@@ -120,11 +116,51 @@ def SelectAllAssignmentsFromUser(userID):
     rows = cursor.fetchall()
     return rows
 
-timetable = Timetable(
-    [Period("Maths", "Joe", "LB1"),Period("Maths", "Joe", "LB1"),Period("Maths", "Joe", "LB1"),Period("Maths", "Joe", "LB1"),Period("Maths", "Joe", "LB1"),Period("Maths", "Joe", "LB1")],
-    [Period("Maths", "Joe", "LB1"),Period("Maths", "Joe", "LB1"),Period("Maths", "Joe", "LB1"),Period("Maths", "Joe", "LB1"),Period("Maths", "Joe", "LB1"),Period("Maths", "Joe", "LB1")],
-    [Period("Maths", "Joe", "LB1"),Period("Maths", "Joe", "LB1"),Period("Maths", "Joe", "LB1"),Period("Maths", "Joe", "LB1"),Period("Maths", "Joe", "LB1"),Period("Maths", "Joe", "LB1")],
-    [Period("Maths", "Joe", "LB1"),Period("Maths", "Joe", "LB1"),Period("Maths", "Joe", "LB1"),Period("Maths", "Joe", "LB1"),Period("Maths", "Joe", "LB1"),Period("Maths", "Joe", "LB1")],
-    [Period("Maths", "Joe", "LB1"),Period("Maths", "Joe", "LB1"),Period("Maths", "Joe", "LB1"),Period("Maths", "Joe", "LB1"),Period("Maths", "Joe", "LB1"),Period("Maths", "Joe", "LB1")]
-)
+def InsertSQLWithData(sqlcode, data):
+    conn = connectToDatabase()
+    cursor = conn.cursor()
+    cursor.execute(sqlcode, data)
+    conn.commit()
+    return cursor.lastrowid
 
+def GetIDandFacePathFromStudents():
+    sqlcode = "SELECT id, facePath FROM students"
+
+    conn = connectToDatabase()
+    cursor = conn.cursor()
+    cursor.execute(sqlcode)
+    rows = cursor.fetchall()
+    return rows
+
+def MakeCollegeUpdateFromID(id):
+    # Validation
+    if type(id) is not int:
+        raise TypeError("ID is not an int")
+
+    sqlcode = "SELECT * FROM collegeupdates WHERE id = ?"
+    data = (id,)
+
+    conn = connectToDatabase()
+    cursor = conn.cursor()
+    cursor.execute(sqlcode, data)
+    rows = cursor.fetchall()[0]
+
+    date = dt.datetime.strptime(rows[1], '%Y-%m-%d').date()
+    collegeUpdate = CollegeUpdate(date, rows[2])
+    return collegeUpdate
+
+def MakeAssignmentClassFromID(id):
+    # Validation
+    if type(id) is not int:
+        raise TypeError("ID is not an int")
+
+    sqlcode = "SELECT * FROM assignments WHERE id = ?"
+    data = (id,)
+
+    conn = connectToDatabase()
+    cursor = conn.cursor()
+    cursor.execute(sqlcode, data)
+    data = cursor.fetchall()[0]
+
+    assignment = Assignment(data[1], data[2], dt.datetime.strptime(data[3], '%Y-%m-%d').date())
+    return assignment
