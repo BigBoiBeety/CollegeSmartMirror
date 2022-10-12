@@ -1,5 +1,6 @@
 import face_recognition as fr
 import cv2 as cv
+import database
 
 knownFaceEncodings = [
     
@@ -24,8 +25,10 @@ def createEncodingAndName(name, imagePath):
     #these will have the same index so they can be looked up easily
     knownFaceNames.append(name) # Adds the name to the list
     
-createEncodingAndName("Lewis", "faces/lewis.jpg")
-createEncodingAndName("Barack Obama", "faces/barackobama.jpg")
+users = database.GetIDandFacePathFromStudents()
+
+for user in users:
+    createEncodingAndName(str(user[0]), user[1])
 
 camera = cv.VideoCapture(0) # Get default video capture
 

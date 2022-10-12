@@ -249,3 +249,10 @@ def MakeStudent(studentID):
     assignments = GetAllUserAssignments(student[0])
 
     return users.Student(student[0], student[1], student[2], student[3], student[4], assignments, timetable)
+
+conn = connectToDatabase()
+cursor = conn.cursor()
+cursor.execute("DELETE FROM students")
+conn.close()
+
+print(SelectAllRowsFromTable("students"))
