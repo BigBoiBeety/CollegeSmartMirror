@@ -1,6 +1,7 @@
 import face_recognition as fr
 import cv2 as cv
 import database
+import sys
 
 knownFaceEncodings = [
     
@@ -50,6 +51,9 @@ def getFirstIdentifiedPerson(): # Start the main display loop
                 camera.release() # Unlink camera
                 cv.destroyAllWindows() # Remove all windows
                 print(knownFaceNames[matches.index(True)])
+                file = open('output.txt', 'w')
+                file.write(knownFaceNames[matches.index(True)])
+                file.close()
                 return knownFaceNames[matches.index(True)] # Get the name of the associated encoding 
     
     camera.release() # Unlink camera

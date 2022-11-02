@@ -1,5 +1,6 @@
 import sqlite3
 from sqlite3 import Error, connect
+from time import time
 from typing import Type
 
 from studentdata import *
@@ -250,9 +251,26 @@ def MakeStudent(studentID):
 
     return users.Student(student[0], student[1], student[2], student[3], student[4], assignments, timetable)
 
-conn = connectToDatabase()
-cursor = conn.cursor()
-cursor.execute("DELETE FROM students")
-conn.close()
+def GetRecentCollegeUpdates():
+    sqlcode = "SELECT * FROM collegeupdates ORDER BY id DESC LIMIT 3"
 
-print(SelectAllRowsFromTable("students"))
+    conn = connectToDatabase()
+    cursor = conn.cursor()
+    cursor.execute(sqlcode)
+
+    return cursor.fetchall()
+
+def SortAssignmentDueDates(assignments):
+    overdueAssignments = []
+    recentAssignments = [] 
+    laterAssignments = []
+
+    for assignment in assignments:
+        if assignment.getTimeRemaining() < 0:
+            overdueAssignments.append(assignment)
+        elif assignment.getTimeRemaining() < 7:
+            recentAssignments.append(assignment)
+        else:
+            laterAssignments.append(assignment)
+    
+    return [overdueAssignments, recentAssignments, laterAssignments]
