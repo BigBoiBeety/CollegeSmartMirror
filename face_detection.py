@@ -1,5 +1,7 @@
 import face_recognition as fr
 import cv2 as cv
+import database
+import sys
 
 knownFaceEncodings = [
     
@@ -24,8 +26,10 @@ def createEncodingAndName(name, imagePath):
     #these will have the same index so they can be looked up easily
     knownFaceNames.append(name) # Adds the name to the list
     
-createEncodingAndName("Lewis", "faces/lewis.jpg")
-createEncodingAndName("Barack Obama", "faces/barackobama.jpg")
+users = database.GetIDandFacePathFromStudents()
+
+for user in users:
+    createEncodingAndName(str(user[0]), user[1])
 
 camera = cv.VideoCapture(0) # Get default video capture
 
@@ -47,6 +51,9 @@ def getFirstIdentifiedPerson(): # Start the main display loop
                 camera.release() # Unlink camera
                 cv.destroyAllWindows() # Remove all windows
                 print(knownFaceNames[matches.index(True)])
+                file = open('output.txt', 'w')
+                file.write(knownFaceNames[matches.index(True)])
+                file.close()
                 return knownFaceNames[matches.index(True)] # Get the name of the associated encoding 
     
     camera.release() # Unlink camera
