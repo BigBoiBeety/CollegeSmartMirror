@@ -274,3 +274,12 @@ def SortAssignmentDueDates(assignments):
             laterAssignments.append(assignment)
     
     return [overdueAssignments, recentAssignments, laterAssignments]
+
+def DeleteRowFromTable(table, id):
+    sqlcode = "DELETE FROM ? WHERE id = ?"
+    data = (table, id,)
+
+    conn = connectToDatabase()
+    cursor = conn.cursor()
+    cursor.execute(sqlcode, data)
+    conn.commit()
