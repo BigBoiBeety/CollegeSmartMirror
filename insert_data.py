@@ -113,6 +113,6 @@ elif choice == "2":
     elif choice == "4":
         database.DeleteRowFromTable("timetables", idToDelete)
     
-
+input()
 
 
